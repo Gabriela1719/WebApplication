@@ -25,7 +25,8 @@ namespace WebApplication
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddControllersWithViews();
             services.AddMvc();
-            services.AddTransient<IVehicleMakeService, VehicleMakeService>();
+            services.AddScoped<IVehicleMakeRepository, VehicleMakeRepository>();
+            services.AddScoped<IVehicleModelRepository, VehicleModelRepository>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
