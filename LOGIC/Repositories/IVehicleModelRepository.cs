@@ -14,5 +14,6 @@ namespace LOGIC
         Task<VehicleModel> DeleteVehicleModel(int ID);
         Task<VehicleModel> UpdateVehicleModel(VehicleModel vehicleModel);
         Task<VehicleModel> GetVehicleModelByID(int? id);
+        void Save();
     }
 }
