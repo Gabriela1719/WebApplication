@@ -50,5 +50,9 @@ namespace LOGIC
         {
             return await context.VehicleModels.FindAsync(id);
         }
+         public void Save()
+        {
+            context.SaveChanges();
+        }
     }
 }
