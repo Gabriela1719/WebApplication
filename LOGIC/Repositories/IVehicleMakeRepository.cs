@@ -12,6 +12,6 @@ namespace LOGIC
         Task<VehicleMake> InsertVehicleMake(VehicleMake vehicleMake);
         Task<VehicleMake> DeleteVehicleMake(int ID);
         Task<VehicleMake> UpdateVehicleMake(VehicleMake vehicleMake);
-        Task<VehicleMake> GetVehicleMakelByID(int? id);
+        Task<VehicleMake> GetVehicleMakeByID(int? id);
     }
 }
