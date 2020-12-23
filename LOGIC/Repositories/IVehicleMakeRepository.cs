@@ -1,16 +1,17 @@
-using DAL.Models;
+ing DAL.Models;
 using System.Collections;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LOGIC
 {
     public interface IVehicleMakeRepository
     {
-       IEnumerable GetVehicleMakes();        
-        VehicleMake GetVehicleMakeByID(int ID);        
-        void InsertVehicleMake(VehicleMake vehicleMake);        
-        void DeleteVehicleMake(int ID);        
-        void UpdateVehicleMake(VehicleMake vehicleMake);        
-        void Save(); 
+        IEnumerable<VehicleMake> GetVehicleMakes();
+        Task<VehicleMake> GetVehicleMakeByID(int ID);
+        Task<VehicleMake> InsertVehicleMake(VehicleMake vehicleMake);
+        Task<VehicleMake> DeleteVehicleMake(int ID);
+        Task<VehicleMake> UpdateVehicleMake(VehicleMake vehicleMake);
+        Task<VehicleMake> GetVehicleMakelByID(int? id);
     }
 }
