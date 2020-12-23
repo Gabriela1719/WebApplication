@@ -1,23 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DAL.DataContext;
 using DAL.Models;
 using PagedList;
+using LOGIC;
 
 namespace WebApplication.Controllers
 {
     public class VehicleModelsController : Controller
     {
-        private readonly DatabaseContext _context;
+        private IVehicleModelRepository vehicleModelRepository;
 
-        public VehicleModelsController(DatabaseContext context)
+        public VehicleModelsController(IVehicleModelRepository vehicleModelRepository)
         {
-            _context = context;
+            this.vehicleModelRepository = vehicleModelRepository;
         }
 
         // GET: VehicleModels
@@ -36,7 +35,7 @@ namespace WebApplication.Controllers
             }
 
             ViewBag.CurrentFilter = searchString;
-            var vehicleModel = from s in _context.VehicleModels
+            var vehicleModel = from s in vehicleModelRepository.GetVehicleModles()
                                select s;
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -60,7 +59,6 @@ namespace WebApplication.Controllers
             return View(vehicleModel.ToPagedList(pageNumber, pageSize));
         }
 
-
         // GET: VehicleModels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -69,8 +67,7 @@ namespace WebApplication.Controllers
                 return NotFound();
             }
 
-            var vehicleModel = await _context.VehicleModels
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var vehicleModel = await vehicleModelRepository.GetVehicleModelByID(id);
             if (vehicleModel == null)
             {
                 return NotFound();
@@ -90,12 +87,12 @@ namespace WebApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Name,Abrv,MakeID")] VehicleModel vehicleModel)
+        public async Task<IActionResult> Create([Bind("ID,Name,Abrv")] VehicleModel vehicleModel)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(vehicleModel);
-                await _context.SaveChangesAsync();
+                await vehicleModelRepository.InsertVehicleModel(vehicleModel);
+                vehicleModelRepository.Save();
                 return RedirectToAction(nameof(Index));
             }
             return View(vehicleModel);
@@ -109,7 +106,7 @@ namespace WebApplication.Controllers
                 return NotFound();
             }
 
-            var vehicleModel = await _context.VehicleModels.FindAsync(id);
+            var vehicleModel = await vehicleModelRepository.GetVehicleModelByID(id);
             if (vehicleModel == null)
             {
                 return NotFound();
@@ -122,32 +119,20 @@ namespace WebApplication.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Abrv,MakeID")] VehicleModel vehicleModel)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Abrv")] VehicleModel vehicleModel)
         {
-            if (id != vehicleModel.ID)
+            try
             {
-                return NotFound();
+                if (ModelState.IsValid)
+                {
+                    await vehicleModelRepository.UpdateVehicleModel(vehicleModel);
+                    vehicleModelRepository.Save();
+                    return RedirectToAction("Index");
+                }
             }
-
-            if (ModelState.IsValid)
+            catch (DbUpdateConcurrencyException)
             {
-                try
-                {
-                    _context.Update(vehicleModel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!VehicleModelExists(vehicleModel.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(string.Empty, "Unable to save changes. Try again, and if the problem persists contact your system administrator.");
             }
             return View(vehicleModel);
         }
@@ -160,8 +145,7 @@ namespace WebApplication.Controllers
                 return NotFound();
             }
 
-            var vehicleModel = await _context.VehicleModels
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var vehicleModel = await vehicleModelRepository.GetVehicleModelByID(id);
             if (vehicleModel == null)
             {
                 return NotFound();
@@ -175,15 +159,10 @@ namespace WebApplication.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vehicleModel = await _context.VehicleModels.FindAsync(id);
-            _context.VehicleModels.Remove(vehicleModel);
-            await _context.SaveChangesAsync();
+            var vehicleModel = await vehicleModelRepository.GetVehicleModelByID(id);
+            await vehicleModelRepository.DeleteVehicleModel(id);
+            vehicleModelRepository.Save();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool VehicleModelExists(int id)
-        {
-            return _context.VehicleModels.Any(e => e.ID == id);
         }
     }
 }
